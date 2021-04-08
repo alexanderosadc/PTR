@@ -12,5 +12,30 @@ send_message(EventMessageBinary, Pid) ->
     gen_server:cast(Pid, {send_message, EventMessageBinary}).
     
 handle_cast({send_message, EventMessageBinary}, State) ->
-    io:format("~p: ~p ~n", [self(), byte_size(EventMessageBinary)]),
+    % io:format("~p: ~p ~n", [self(), byte_size(EventMessageBinary)]),
+    EventMap = shotgun:parse_event(EventMessageBinary),
+    #{data := EventData} = EventMap,
+    check_json(EventData, jsx:is_json(EventData)),
+    % io:format("~p ~n", [EventData]),
     {noreply, State}.
+
+check_json(Json, IsJson) when IsJson ->
+    JsonMap = jsx:decode(Json),
+    % io:format("~p ~n", [JsonMap]),
+    #{<<"message">> := #{<<"tweet">> := #{<<"text">> := TweetText}}} = JsonMap,
+    JsonToUnicode = unicode:characters_to_list(TweetText),
+    TweetTokens = string:tokens(JsonToUnicode, "&#0123456789,./'\";:{}[]()*%/+-_<>!?\n@ "), 
+    % io:format("~p ~n", [TweetTokens]);
+    calculate_score(TweetTokens);
+
+check_json(Json, IsJson) ->
+    ok.
+
+calculate_score(TweetTokens) ->
+    ScoresInTweet =  lists:map(
+        fun(Key) when is_integer(Key) =:= false ->
+            LowerKey = string:to_lower(Key),
+            io:format("~p ~n", [LowerKey]),
+            emotional_score:find_emotion(Key)
+        end, 
+    TweetTokens).
