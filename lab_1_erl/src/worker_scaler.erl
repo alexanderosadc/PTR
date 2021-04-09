@@ -11,21 +11,11 @@ init([]) ->
     erlang:start_timer(0, ?MODULE, secondsexpired),
     {ok, MessageCounter}.
 
-
-
-start_new_child() ->
-    worker_supervisor:add_new_child().
-
-remove_child() ->
-    ok.
-
 handle_cast(upscale, MessageCounter) ->
     {noreply, MessageCounter + 1}.
 
 handle_info({_, _, secondsexpired}, MessageCounter) ->
-    % io:format("~p ~n", [MessageCounter]),
     NrOfWorkersFuture = calculate_number_of_workers(MessageCounter),
-    % NrOfWorkersFuture = MessageCounter div 100,
     NrOfWorkersCurrent= length(worker_supervisor:get_all_children()),
     handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent),
     erlang:start_timer(1000, self(), secondsexpired),
@@ -36,17 +26,17 @@ calculate_number_of_workers(MessageCounter) when MessageCounter < 100 ->
 calculate_number_of_workers(MessageCounter) when MessageCounter >= 100 ->
     MessageCounter div 100.
 
-handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent  < NrOfWorkersFuture ->
+handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent  < (NrOfWorkersFuture + 3) ->
     io:format("~p ~n", ["Add new CHILD +++++++++++++++++++++++++++++++++++++++++++++++++"]),
     worker_supervisor:add_new_child(),
     handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent + 1);
 
-handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent > NrOfWorkersFuture ->
-    io:format("~p ~n", ["New Child Removed ------------------------------------------------------"]),
-    worker_supervisor:remove_one_child(),
-    io:format("~p ~n", [worker_supervisor:get_all_children()]);
 
-handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent =:= NrOfWorkersFuture ->
+handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent > (NrOfWorkersFuture + 3) ->
+    io:format("~p ~n", ["New Child Removed ------------------------------------------------------"]),
+    worker_supervisor:remove_one_child();
+
+handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent =:= (NrOfWorkersFuture + 3) ->
     io:format("~p ~n", ["NEUTRAL -_+))(@)!*$()@*!)$(*-$*@!&$(*&@!*"]),
     ok.
 

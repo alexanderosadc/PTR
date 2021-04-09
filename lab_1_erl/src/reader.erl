@@ -7,7 +7,6 @@ start(Stream) ->
     fun () -> 
         start_reader_download(Stream) 
     end),
-    % io:format("~p~p~n", ["started conn", Pid]),
     {ok, Pid}.
 
 start_reader_download(Stream) ->
@@ -22,7 +21,7 @@ start_reader_download(Stream) ->
             end
         },
     {ok, _Ref} = shotgun:get(Conn, Stream, #{}, Options),
-    wait(1000),
+    wait(10000),
     shotgun:close(Conn).
 
 wait(Miliseconds) ->

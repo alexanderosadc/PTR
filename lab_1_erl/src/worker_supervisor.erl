@@ -9,7 +9,7 @@ start_link() ->
     {ok, Pid}.
 
 init(_Args) ->
-    MaxRestart = 2,
+    MaxRestart = 6,
     MaxTime = 100,
     SupFlags = #{
         strategy => simple_one_for_one,

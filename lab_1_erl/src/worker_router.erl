@@ -15,19 +15,15 @@ handle_call({_, _}, State, _)->
 handle_cast({send_message, EventMessageBinary}, State) ->
     worker_scaler:new_message_appear(),
     ChildrenPid = worker_supervisor:get_all_children(),
-    io:format("~p ~n", [ChildrenPid]),
     ChildPidIndex = round_robin(EventMessageBinary, State, ChildrenPid),
     {noreply, ChildPidIndex}.
 
-round_robin(EventMessageBinary, N, ListOfPids) ->
-
+round_robin(EventMessageBinary, N, ListOfPids) when N < length(ListOfPids) ->
     ChildrenPid = lists:nth(N, ListOfPids),
     sentinel_worker:send_message(EventMessageBinary, ChildrenPid),
-    indexReturning(N, ListOfPids).
-
-indexReturning(N, ListOfPids) when N < length(ListOfPids) ->
     N + 1;
-indexReturning(N, ListOfPids) when N >= length(ListOfPids) ->
+
+round_robin(_, N, ListOfPids) when N >= length(ListOfPids) ->
     1.
 
 send_message(EventMessageBinary) ->
