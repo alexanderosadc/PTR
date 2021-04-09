@@ -7,13 +7,14 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    initialize_workers(4),
+    % initialize_workers(4),
     {ok, 1}.
 
 handle_call({_, _}, State, _)->
     {noreply, State}.
 
 handle_cast({send_message, EventMessageBinary}, State) ->
+    worker_scaler:new_message_appear(),
     ChildrenProcessData = worker_supervisor:get_all_children(),
     ChildrenPid = lists:map(fun({_, ChildPid, _, _}) -> ChildPid end, ChildrenProcessData),
     % io:format("~p: ~p ~n", [self(), ChildrenPid]),

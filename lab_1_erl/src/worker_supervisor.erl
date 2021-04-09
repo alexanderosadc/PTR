@@ -32,5 +32,10 @@ add_new_child() ->
     
     supervisor:start_child(?MODULE, []).
 
+remove_one_child() ->
+    ChildPIDS = get_all_children(),
+    [FirstChild | _ ] = ChildPIDS,
+    supervisor:terminate_child(?MODULE, FirstChild).
+
 get_all_children() ->
     supervisor:which_children(?MODULE).

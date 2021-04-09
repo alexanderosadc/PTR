@@ -35,7 +35,13 @@ calculate_score(TweetTokens) ->
     ScoresInTweet =  lists:map(
         fun(Key) when is_integer(Key) =:= false ->
             LowerKey = string:to_lower(Key),
-            io:format("~p ~n", [LowerKey]),
-            emotional_score:find_emotion(Key)
+            Score = emotional_score:find_emotion(LowerKey),
+            Score
         end, 
-    TweetTokens).
+    TweetTokens),
+    % io:format("~p ~n", [ScoresInTweet]),
+    SumOfTweetTokens = lists:sum(ScoresInTweet),
+    EmotionalScore = SumOfTweetTokens / length(ScoresInTweet),
+    io:format("~p ~n", [EmotionalScore]),
+    EmotionalScore.
+    

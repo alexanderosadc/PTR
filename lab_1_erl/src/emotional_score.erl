@@ -5,7 +5,7 @@
 find_emotion([_]) ->
     0;
 
-find_emotion(key) ->
+find_emotion(Key) ->
 
 MapOfEmotions = 
     #{
@@ -2488,10 +2488,10 @@ MapOfEmotions =
     "zealous" => 2
 },
 
-FoundValue = maps:find(key, MapOfEmotions),
+FoundValue = maps:find(Key, MapOfEmotions),
 return_score(FoundValue).
 
-return_score(FoundValue) when length(FoundValue) > 0 ->
-    FoundValue;
-return_score(FoundValue) ->
-    0. 
+return_score(FoundValue) when FoundValue =:= error ->
+    0;
+return_score({ok, FoundValue}) ->
+    FoundValue. 

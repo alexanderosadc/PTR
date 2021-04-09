@@ -58,6 +58,14 @@ init([]) ->
         shutdown => 2000, 
         type => supervisor,
 	    modules => [worker_supervisor]},
+    
+    Scaler = #{
+        id => worker_scaler,
+	    start => {worker_scaler, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [worker_scaler]},
 
     % WorkerStarter = #{
     %     id => workerStarter,
@@ -68,7 +76,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [Supervisor, Router, Reader],
+    ChildSpecs = [Supervisor, Scaler, Router, Reader],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
