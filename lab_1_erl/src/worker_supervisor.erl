@@ -2,7 +2,7 @@
 
 -behaviour(supervisor).
 
--export([start_link/0, init/1, add_new_child/0, get_all_children/0]).
+-export([start_link/0, init/1, add_new_child/0, get_all_children/0, remove_one_child/0]).
 
 start_link() ->
     {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, []),
@@ -38,4 +38,5 @@ remove_one_child() ->
     supervisor:terminate_child(?MODULE, FirstChild).
 
 get_all_children() ->
-    supervisor:which_children(?MODULE).
+    ChildrenProcessData = supervisor:which_children(?MODULE),
+    lists:map(fun({_, ChildPid, _, _}) -> ChildPid end, ChildrenProcessData).

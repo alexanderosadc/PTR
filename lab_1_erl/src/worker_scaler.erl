@@ -20,28 +20,34 @@ remove_child() ->
     ok.
 
 handle_cast(upscale, MessageCounter) ->
-    MessageCounter + 1.
+    {noreply, MessageCounter + 1}.
 
-handle_info({secondsexpired, _, _}, MessageCounter) ->
+handle_info({_, _, secondsexpired}, MessageCounter) ->
+    % io:format("~p ~n", [MessageCounter]),
     NrOfWorkersFuture = calculate_number_of_workers(MessageCounter),
+    % NrOfWorkersFuture = MessageCounter div 100,
     NrOfWorkersCurrent= length(worker_supervisor:get_all_children()),
     handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent),
-    erlang:start_timer(1, self(), secondsexpired),
-    {noreply, MessageCounter = 0}.
+    erlang:start_timer(1000, self(), secondsexpired),
+    {noreply, 0}.
 
 calculate_number_of_workers(MessageCounter) when MessageCounter < 100 ->
     1;
-calculate_number_of_workers(MessageCounter) ->
+calculate_number_of_workers(MessageCounter) when MessageCounter >= 100 ->
     MessageCounter div 100.
 
 handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent  < NrOfWorkersFuture ->
+    io:format("~p ~n", ["Add new CHILD +++++++++++++++++++++++++++++++++++++++++++++++++"]),
     worker_supervisor:add_new_child(),
     handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent + 1);
 
 handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent > NrOfWorkersFuture ->
-    worker_supervisor:remove_child();
+    io:format("~p ~n", ["New Child Removed ------------------------------------------------------"]),
+    worker_supervisor:remove_one_child(),
+    io:format("~p ~n", [worker_supervisor:get_all_children()]);
 
 handle_number_of_workers(NrOfWorkersFuture, NrOfWorkersCurrent) when NrOfWorkersCurrent =:= NrOfWorkersFuture ->
+    io:format("~p ~n", ["NEUTRAL -_+))(@)!*$()@*!)$(*-$*@!&$(*&@!*"]),
     ok.
 
 new_message_appear() ->

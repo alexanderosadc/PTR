@@ -42,6 +42,5 @@ calculate_score(TweetTokens) ->
     % io:format("~p ~n", [ScoresInTweet]),
     SumOfTweetTokens = lists:sum(ScoresInTweet),
     EmotionalScore = SumOfTweetTokens / length(ScoresInTweet),
-    io:format("~p ~n", [EmotionalScore]),
     EmotionalScore.
     
