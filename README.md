@@ -19,4 +19,4 @@ The project is created in erlang with the help of:
 * rebar3 package manager - building program
 * jsx library - unpackaage
 
-![Video](https://utm-my.sharepoint.com/:v:/g/personal/alexandru_osadcenco_isa_utm_md/EYKVW_VoA1ZKiP45qwmEfIMBQS6DcTkNXKnMNkIWOacoUA?e=D9Ef4E)
+[Video](https://utm-my.sharepoint.com/:v:/g/personal/alexandru_osadcenco_isa_utm_md/EYKVW_VoA1ZKiP45qwmEfIMBQS6DcTkNXKnMNkIWOacoUA?e=D9Ef4E)
