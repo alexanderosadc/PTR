@@ -34,10 +34,19 @@ init([]) ->
                 period => MaxTime},
     
     Stream1 = "/tweets/1",
+    Stream2 = "/tweets/2",
     
-    Reader = #{
-        id => reader,
+    Reader1 = #{
+        id => reader1,
 	    start => {reader, start, [Stream1]},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [reader]},
+    
+    Reader2 = #{
+        id => reader2,
+	    start => {reader, start, [Stream2]},
 	    restart => permanent, 
         shutdown => 2000, 
         type => worker,
@@ -76,7 +85,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [Supervisor, Scaler, Router, Reader],
+    ChildSpecs = [Supervisor, Scaler, Router, Reader1, Reader2],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
