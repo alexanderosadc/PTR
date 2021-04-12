@@ -60,13 +60,21 @@ init([]) ->
         type => worker,
 	    modules => [worker_router]},
     
-    Supervisor = #{
-        id => worker_supervisor,
-	    start => {worker_supervisor, start_link, []},
+    SentimentSupervisor = #{
+        id => sentiment_worker_supervisor,
+	    start => {sentiment_worker_supervisor, start_link, []},
 	    restart => permanent, 
         shutdown => 2000, 
         type => supervisor,
-	    modules => [worker_supervisor]},
+	    modules => [sentiment_worker_supervisor]},
+
+    EngagementSupervisor = #{
+        id => engagement_worker_supervisor,
+	    start => {engagement_worker_supervisor, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => supervisor,
+	    modules => [engagement_worker_supervisor]},
     
     Scaler = #{
         id => worker_scaler,
@@ -85,7 +93,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [Supervisor, Scaler, Router, Reader1, Reader2],
+    ChildSpecs = [SentimentSupervisor, EngagementSupervisor, Scaler, Router, Reader1, Reader2],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

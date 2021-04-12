@@ -7,23 +7,32 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    {ok, 1}.
+    {ok, {1, 1}}.
 
 handle_call({_, _}, State, _)->
     {noreply, State}.
 
 handle_cast({send_message, EventMessageBinary}, State) ->
     worker_scaler:new_message_appear(),
-    ChildrenPid = worker_supervisor:get_all_children(),
-    ChildPidIndex = round_robin(EventMessageBinary, State, ChildrenPid),
-    {noreply, ChildPidIndex}.
 
-round_robin(EventMessageBinary, N, ListOfPids) when N < length(ListOfPids) ->
-    ChildrenPid = lists:nth(N, ListOfPids),
-    sentinel_worker:send_message(EventMessageBinary, ChildrenPid),
-    N + 1;
+    SentimentChildrenPid = sentiment_worker_supervisor:get_all_children(),
+    EngagementChildrenPid = engagement_worker_supervisor:get_all_children(),
 
-round_robin(_, N, ListOfPids) when N >= length(ListOfPids) ->
+    SentimentChildPidIndex = round_robin(EventMessageBinary, State, SentimentChildrenPid, sentiment),
+    EngagementChildPidIndex = round_robin(EventMessageBinary, State, EngagementChildrenPid, engagement),
+    {noreply, {SentimentChildPidIndex, EngagementChildPidIndex}}.
+
+round_robin(EventMessageBinary, {SentimentIndex, EngagementIndex}, ListOfPids, sentiment) when SentimentIndex < length(ListOfPids) ->
+    ChildrenPid = lists:nth(SentimentIndex, ListOfPids),
+    sentiment_score_worker:send_message(EventMessageBinary, ChildrenPid),
+    {SentimentIndex + 1, EngagementIndex};
+
+round_robin(EventMessageBinary,  {SentimentIndex, EngagementIndex}, ListOfPids, engagement) when EngagementIndex < length(ListOfPids) ->
+    ChildrenPid = lists:nth(EngagementIndex, ListOfPids),
+    engagement_ratio_worker:send_message(EventMessageBinary, ChildrenPid),
+    {SentimentIndex, EngagementIndex + 1};
+
+round_robin(_, N, ListOfPids, _) when N >= length(ListOfPids) ->
     1.
 
 send_message(EventMessageBinary) ->

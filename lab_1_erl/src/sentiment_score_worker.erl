@@ -1,4 +1,4 @@
--module(sentinel_worker).
+-module(sentiment_score_worker).
 -behaviour(gen_server).
 -export([send_message/2, start_link/0, init/1 ,handle_cast/2]).
 
@@ -46,6 +46,6 @@ calculate_score(TweetTokens) ->
     TweetTokens),
     SumOfTweetTokens = lists:sum(ScoresInTweet),
     EmotionalScore = SumOfTweetTokens / length(ScoresInTweet),
-    io:format("~p ~n", [EmotionalScore]),
+    % io:format("~p ~n", [EmotionalScore]),
     EmotionalScore.
     

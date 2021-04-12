@@ -1,4 +1,4 @@
--module(worker_supervisor).
+-module(sentiment_worker_supervisor).
 
 -behaviour(supervisor).
 
@@ -18,12 +18,12 @@ init(_Args) ->
     },
     
     ChildWorker = #{
-        id => sentinel_worker,
-	    start => {sentinel_worker, start_link, []},
+        id => sentiment_score_worker,
+	    start => {sentiment_score_worker, start_link, []},
 	    restart => permanent, 
         shutdown => 2000, 
         type => worker,
-	    modules => [sentinel_worker]},
+	    modules => [sentiment_score_worker]},
     
     ChildSpecs = [ChildWorker],
     {ok, {SupFlags, ChildSpecs}}.
