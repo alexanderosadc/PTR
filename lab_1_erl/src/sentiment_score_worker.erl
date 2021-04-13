@@ -19,7 +19,11 @@ handle_cast({send_message, EventMessageBinary}, State) ->
 
 check_json(Json, IsJson) when IsJson ->
     JsonMap = jsx:decode(Json),
-    #{<<"message">> := #{<<"tweet">> := #{<<"text">> := TweetText}}} = JsonMap,
+    #{<<"message">> := 
+        #{<<"tweet">> := 
+            #{<<"text">> := TweetText}
+        }
+    } = JsonMap,
     JsonToUnicode = unicode:characters_to_list(TweetText),
     TweetTokens = string:tokens(JsonToUnicode, "&#0123456789,./'\";:{}[]()*%/+-_<>!?\n@ "), 
     calculate_score(TweetTokens);
