@@ -17,6 +17,19 @@ handle_cast({send_message, EventMessageBinary}, State) ->
     check_json(EventData, jsx:is_json(EventData)),
     {noreply, State}.
 
+check_json(Json, IsJson) when IsJson ->
+    JsonMap = jsx:decode(Json),
+     #{<<"message">> := #{<<"tweet">> := Tweet}} = JsonMap,
+    IsRetweetedStatus = maps:is_key(<<"retweeted_status">>, Tweet),
+    EngagementRatio = check_retweeted_status(IsRetweetedStatus, JsonMap),
+    io:format("~p ~n", [EngagementRatio]);
+
+check_json(TweetText, _) ->
+    % io:format("~p ~n", ["Panic"]),
+    PanicText = string:find(TweetText, "panic"),
+    kill_process(PanicText),
+    ok.
+
 check_retweeted_status(IsRetweetedStatus, JsonMap) when IsRetweetedStatus =:= true ->
     #{<<"message">> :=
         #{<<"tweet">> :=
@@ -38,19 +51,6 @@ check_retweeted_status(IsRetweetedStatus, JsonMap) when IsRetweetedStatus =:= tr
 
 check_retweeted_status(_, _) ->
     0.
-
-check_json(Json, IsJson) when IsJson ->
-    JsonMap = jsx:decode(Json),
-     #{<<"message">> := #{<<"tweet">> := Tweet}} = JsonMap,
-    IsRetweetedStatus = maps:is_key(<<"retweeted_status">>, Tweet),
-    EngagementRatio = check_retweeted_status(IsRetweetedStatus, JsonMap),
-    io:format("~p ~n", [EngagementRatio]);
-
-check_json(TweetText, _) ->
-    % io:format("~p ~n", ["Panic"]),
-    PanicText = string:find(TweetText, "panic"),
-    kill_process(PanicText),
-    ok.
 
 kill_process(PanicText) when  PanicText =:= nomatch->
    ok;

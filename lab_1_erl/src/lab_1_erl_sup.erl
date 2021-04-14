@@ -7,9 +7,7 @@
 
 -behaviour(supervisor).
 
--export([start_link/0]).
-
--export([init/1]).
+-export([init/1, start_link/0]).
 
 -define(SERVER, ?MODULE).
 
@@ -52,38 +50,21 @@ init([]) ->
         type => worker,
 	    modules => [reader]},
     
-    Router = #{
-        id => router,
-	    start => {worker_router, start_link, []},
-	    restart => permanent, 
-        shutdown => 2000, 
-        type => worker,
-	    modules => [worker_router]},
-    
-    SentimentSupervisor = #{
-        id => sentiment_worker_supervisor,
-	    start => {sentiment_worker_supervisor, start_link, []},
+
+    PoolSupervisorEngagement = #{
+        id => pool_supervisor_engagement,
+	    start => {pool_supervisor, start_link, [engagement]},
 	    restart => permanent, 
         shutdown => 2000, 
         type => supervisor,
-	    modules => [sentiment_worker_supervisor]},
-
-    EngagementSupervisor = #{
-        id => engagement_worker_supervisor,
-	    start => {engagement_worker_supervisor, start_link, []},
-	    restart => permanent, 
-        shutdown => 2000, 
-        type => supervisor,
-	    modules => [engagement_worker_supervisor]},
+	    modules => [pool_supervisor]},
     
-    Scaler = #{
-        id => worker_scaler,
-	    start => {worker_scaler, start_link, []},
+    PoolSupervisorSentiment = #{
+        id => pool_supervisor_sentiment,
+	    start => {pool_supervisor, start_link, [sentiment]},
 	    restart => permanent, 
         shutdown => 2000, 
-        type => worker,
-	    modules => [worker_scaler]},
-
+        type => supervisor},
     % WorkerStarter = #{
     %     id => workerStarter,
 	%     start => {sentinel_worker, start_link, []},
@@ -93,7 +74,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [SentimentSupervisor, EngagementSupervisor, Scaler, Router, Reader1, Reader2],
+    ChildSpecs = [PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

@@ -1,14 +1,14 @@
--module(sentiment_worker_supervisor).
+-module(worker_supervisor).
 
 -behaviour(supervisor).
 
--export([start_link/0, init/1, add_new_child/0, get_all_children/0, remove_one_child/0]).
+-export([start_link/1, init/1, add_new_child/0, get_all_children/0, remove_one_child/0]).
 
-start_link() ->
-    {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, []),
+start_link(TypeOfPool) ->
+    {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, [TypeOfPool]),
     {ok, Pid}.
 
-init(_Args) ->
+init(TypeOfPool) ->
     MaxRestart = 6,
     MaxTime = 100,
     SupFlags = #{
@@ -18,12 +18,12 @@ init(_Args) ->
     },
     
     ChildWorker = #{
-        id => sentiment_score_worker,
-	    start => {sentiment_score_worker, start_link, []},
+        id => simple_worker,
+	    start => {simple_worker, start_link, [TypeOfPool]},
 	    restart => permanent, 
         shutdown => 2000, 
         type => worker,
-	    modules => [sentiment_score_worker]},
+	    modules => [simple_worker]},
     
     ChildSpecs = [ChildWorker],
     {ok, {SupFlags, ChildSpecs}}.

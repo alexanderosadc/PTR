@@ -2,39 +2,52 @@
 
 -behaviour(supervisor).
 
-start_link() ->
-    {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, []),
-    {ok, Pid}.
+-export([init/1, start_link/1]).
 
-init(_Args) ->
+start_link(TypeOfPool) ->
+    io:format("~p ~n", [TypeOfPool]),
+    supervisor:start_link({local, ?MODULE}, ?MODULE, [TypeOfPool])    .
+
+init(TypeOfPool) ->
     MaxRestart = 6,
     MaxTime = 100,
 
-    
     SupFlags = #{
-        strategy => simple_one_for_one,
+        strategy => one_for_one,
 		intensity => MaxRestart, 
         period => MaxTime
     },
 
-    Supervisor = #{
-        id => engagement_ratio_worker,
-	    start => {engagement_ratio_worker, start_link, []},
+    Router = #{
+        id => router,
+	    start => {worker_router, start_link, []},
 	    restart => permanent, 
         shutdown => 2000, 
         type => worker,
-	    modules => [engagement_ratio_worker]},
+	    modules => [worker_router]
     },
-    
-    ChildWorker = #{
-        id => engagement_ratio_worker,
-	    start => {engagement_ratio_worker, start_link, []},
-	    restart => permanent, 
+
+    Scaler = #{
+        id => worker_scaler,
+        start => {worker_scaler, start_link, []},
+        restart => permanent, 
         shutdown => 2000, 
         type => worker,
-	    modules => [engagement_ratio_worker]},
+        modules => [worker_scaler]
+        },
+
+    WorkerSupervisor = #{
+        id => worker_supervisor,
+	    start => {worker_supervisor, start_link, [TypeOfPool]},
+	    restart => permanent,
+        shutdown => 2000, 
+        type => supervisor,
+	    modules => [worker_supervisor]
+    },
+
+
     
-    ChildSpecs = [ChildWorker],
+    ChildSpecs = [WorkerSupervisor, Scaler, Router],
     {ok, {SupFlags, ChildSpecs}}.
 
 get_all_children() ->
