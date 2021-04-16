@@ -3,21 +3,21 @@
 -export([send_message/2, start_link/1, init/1 ,handle_cast/2]).
 
 start_link(TypeOfPool) ->
-    gen_server:start_link(?MODULE, [], [TypeOfPool]).
+    gen_server:start_link(?MODULE, TypeOfPool, []).
 
-init(TypeOfPool) ->
+init([TypeOfPool]) ->
     {ok, TypeOfPool}.
 
 send_message(EventMessageBinary, Pid) ->
     gen_server:cast(Pid, {send_message, EventMessageBinary}).
     
-handle_cast({send_message, EventMessageBinary}, TypeOfPool) ->
-    EventMap = shotgun:parse_event(EventMessageBinary),
-    #{data := EventData} = EventMap,
+handle_cast({send_message, EventData}, TypeOfPool) ->
+    
+    % io:format("~p ~n", [TypeOfPool]),
     check_json(EventData, jsx:is_json(EventData), TypeOfPool),
     {noreply, TypeOfPool}.
 
-check_json(Json, IsJson, sentiment) when IsJson ->
+check_json(Json, IsJson, sentiment) when IsJson =:= true ->
     JsonMap = jsx:decode(Json),
     #{<<"message">> := 
         #{<<"tweet">> := 
@@ -26,16 +26,17 @@ check_json(Json, IsJson, sentiment) when IsJson ->
     } = JsonMap,
     JsonToUnicode = unicode:characters_to_list(TweetText),
     TweetTokens = string:tokens(JsonToUnicode, "&#0123456789,./'\";:{}[]()*%/+-_<>!?\n@ "), 
-    calculate_score(TweetTokens);
+    Score = calculate_score(TweetTokens),
+    io:format("~p~p ~n", ["Sentiment =", Score]);
 
-check_json(Json, IsJson, engagement) when IsJson ->
+check_json(Json, IsJson, engagement) when IsJson =:= true ->
     JsonMap = jsx:decode(Json),
      #{<<"message">> := #{<<"tweet">> := Tweet}} = JsonMap,
     IsRetweetedStatus = maps:is_key(<<"retweeted_status">>, Tweet),
     EngagementRatio = check_retweeted_status(IsRetweetedStatus, JsonMap),
-    io:format("~p ~n", [EngagementRatio]);
+    io:format("~p~p ~n", ["Engagement = ", EngagementRatio]);
 
-check_json(TweetText, _, _) ->
+check_json(TweetText, IsJson, _) ->
     PanicText = string:find(TweetText, "panic"),
     kill_process(PanicText),
     ok.

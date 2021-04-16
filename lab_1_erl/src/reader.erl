@@ -17,7 +17,7 @@ start_reader_download(Stream) ->
         async_mode => sse,
 		handle_event =>
 		    fun (_, _, BinaryMessages) ->
-                worker_router:send_message(BinaryMessages) 
+                filter:send_message(BinaryMessages) 
             end
         },
     {ok, _Ref} = shotgun:get(Conn, Stream, #{}, Options),

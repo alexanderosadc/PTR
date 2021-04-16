@@ -2,10 +2,11 @@
 
 -behaviour(supervisor).
 
--export([start_link/1, init/1, add_new_child/0, get_all_children/0, remove_one_child/0]).
+-export([start_link/1, init/1, add_new_child/1, get_all_children/1, remove_one_child/1]).
 
 start_link(TypeOfPool) ->
-    {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, [TypeOfPool]),
+    AtomFromString = useful_functions:get_atom(TypeOfPool, "supervisor"),
+    {ok, Pid} = supervisor:start_link({local, AtomFromString}, ?MODULE, [TypeOfPool]),
     {ok, Pid}.
 
 init(TypeOfPool) ->
@@ -28,15 +29,18 @@ init(TypeOfPool) ->
     ChildSpecs = [ChildWorker],
     {ok, {SupFlags, ChildSpecs}}.
 
-add_new_child() ->
-    
-    supervisor:start_child(?MODULE, []).
+add_new_child(TypeOfPool) ->
+    AtomFromString = useful_functions:get_atom(TypeOfPool, "supervisor"),
+    supervisor:start_child(AtomFromString, []).
 
-remove_one_child() ->
-    ChildPIDS = get_all_children(),
+remove_one_child(TypeOfPool) ->
+    % io:format("~p ~n", ["Remove One Child"]),
+    AtomFromString = useful_functions:get_atom(TypeOfPool, "supervisor"),
+    ChildPIDS = get_all_children(TypeOfPool),
     [FirstChild | _ ] = ChildPIDS,
-    supervisor:terminate_child(?MODULE, FirstChild).
+    supervisor:terminate_child(AtomFromString, FirstChild).
 
-get_all_children() ->
-    ChildrenProcessData = supervisor:which_children(?MODULE),
+get_all_children(TypeOfPool) ->
+    AtomFromString = useful_functions:get_atom(TypeOfPool, "supervisor"),
+    ChildrenProcessData = supervisor:which_children(AtomFromString),
     lists:map(fun({_, ChildPid, _, _}) -> ChildPid end, ChildrenProcessData).

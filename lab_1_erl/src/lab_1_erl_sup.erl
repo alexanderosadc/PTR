@@ -34,6 +34,14 @@ init([]) ->
     Stream1 = "/tweets/1",
     Stream2 = "/tweets/2",
     
+    Filter = #{
+        id => filter,
+	    start => {filter, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [filter]},
+    
     Reader1 = #{
         id => reader1,
 	    start => {reader, start, [Stream1]},
@@ -64,7 +72,8 @@ init([]) ->
 	    start => {pool_supervisor, start_link, [sentiment]},
 	    restart => permanent, 
         shutdown => 2000, 
-        type => supervisor},
+        type => supervisor,
+        modules => [pool_supervisor]},
     % WorkerStarter = #{
     %     id => workerStarter,
 	%     start => {sentinel_worker, start_link, []},
@@ -74,7 +83,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
+    ChildSpecs = [Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

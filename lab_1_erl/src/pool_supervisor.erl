@@ -5,8 +5,7 @@
 -export([init/1, start_link/1]).
 
 start_link(TypeOfPool) ->
-    io:format("~p ~n", [TypeOfPool]),
-    supervisor:start_link({local, ?MODULE}, ?MODULE, [TypeOfPool])    .
+    supervisor:start_link(?MODULE, TypeOfPool).
 
 init(TypeOfPool) ->
     MaxRestart = 6,
@@ -20,7 +19,7 @@ init(TypeOfPool) ->
 
     Router = #{
         id => router,
-	    start => {worker_router, start_link, []},
+	    start => {worker_router, start_link, [TypeOfPool]},
 	    restart => permanent, 
         shutdown => 2000, 
         type => worker,
@@ -29,7 +28,7 @@ init(TypeOfPool) ->
 
     Scaler = #{
         id => worker_scaler,
-        start => {worker_scaler, start_link, []},
+        start => {worker_scaler, start_link, [TypeOfPool]},
         restart => permanent, 
         shutdown => 2000, 
         type => worker,
