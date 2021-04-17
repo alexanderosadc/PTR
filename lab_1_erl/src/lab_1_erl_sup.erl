@@ -34,6 +34,14 @@ init([]) ->
     Stream1 = "/tweets/1",
     Stream2 = "/tweets/2",
     
+    Agregator = #{
+        id => agregator,
+	    start => {agregator, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [agregator]},
+
     Filter = #{
         id => filter,
 	    start => {filter, start_link, []},
@@ -83,7 +91,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
+    ChildSpecs = [Agregator, Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

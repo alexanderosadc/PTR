@@ -15,25 +15,30 @@ handle_call({_, _}, State, _)->
 handle_cast({send_message, EventMessageBinary}, State) ->
     EventMap = shotgun:parse_event(EventMessageBinary),
     #{data := EventData} = EventMap,
-    % io:format("~p~p ~n", ["Sentiment =", EventData]),
+
     NewId = send_data_to_routers(EventData, jsx:is_json(EventData), State),
     {noreply, NewId}.
 
 send_data_to_routers(EventData, IsJson, Id) ->
-    {NewId, NewMap} = assign_id_to_map(EventData, IsJson, Id),
-    worker_router:send_message(sentiment, NewMap),
-    worker_router:send_message(engagement, NewMap),
+    
+    NewId = assign_id_to_map(EventData, IsJson, Id),
     NewId.
 
 assign_id_to_map(EventData, IsJson, Id) when IsJson =:= true->
     DecodedJson = jsx:decode(EventData),
-    NewMap = maps:put("Twitter_ID", Id, DecodedJson),
+    #{<<"message">> := 
+        #{<<"tweet">> := #{<<"text">> := TweetText}}
+    } = DecodedJson,
+    NewMap = #{<<"Twitter_ID">> => Id, <<"JSON">> => DecodedJson},
+    MapForAgregator = #{<<"Twitter_ID">> => Id, <<"Tweet">> => TweetText},
     NewId = Id + 1,
-    {NewId, NewMap};
+    worker_router:send_message(sentiment, NewMap),
+    worker_router:send_message(engagement, NewMap),
+    agregator:send_message(MapForAgregator),
+    NewId;
 
-assign_id_to_map(EventData, IsJson, Id) ->
-    io:format("~p~p ~n", ["EventData", EventData]),
-    {Id, EventData}.
+assign_id_to_map(EventData, IsJson, Id) when IsJson =:= false ->
+    Id.
 
 send_message(EventMessageBinary) ->
     gen_server:cast(?MODULE, {send_message, EventMessageBinary}).
