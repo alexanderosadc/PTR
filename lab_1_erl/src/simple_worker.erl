@@ -67,7 +67,7 @@ check_retweeted_status(IsRetweetedStatus, JsonMap) when IsRetweetedStatus =:= tr
             }
     }} = JsonMap,
 
-    (NrOfFavourites / NrOfRetweets) / NrOfFollowers;
+    (NrOfFavourites / NrOfRetweets) / (NrOfFollowers + 1);
 
 check_retweeted_status(_, _) ->
     0.
