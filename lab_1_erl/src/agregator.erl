@@ -29,13 +29,29 @@ map_enlarger(true, MapId, RecievedMap, MapOfMaps) ->
     StringMapId = string:concat("Map_", integer_to_list(MapId)),
     ElementFromMap = maps:get(StringMapId, MapOfMaps),
     
-    MergedMaps = maps:merge(ElementFromMap, RecievedMap),
-    NewMapElement = maps:put(StringMapId, MergedMaps, #{}),
-    MergedMapOfMaps = maps:merge(MapOfMaps, NewMapElement),
-    
-    io:format("~p~p ~n", ["MergedMaps", MergedMapOfMaps]),
-    MergedMapOfMaps.
+    MergedElementsMap = maps:merge(ElementFromMap, RecievedMap),
+    IsMapFull = check_for_elements(maps:size(MergedElementsMap)),
+
+    % io:format("~p~p ~n", ["MergedMaps", IsMapFull]),
+    UpdatedMap = send_element_to_batcher(IsMapFull, StringMapId, MergedElementsMap, MapOfMaps),
+    % io:format("~p~p ~n", ["Updated Map", UpdatedMap]),
+    UpdatedMap.
 
 check_ID(Id, MapOfMaps) ->
     StringMapId = string:concat("Map_", integer_to_list(Id)),
     maps:is_key(StringMapId, MapOfMaps).
+
+check_for_elements(4) ->
+    true;
+check_for_elements(_) ->
+    false.
+
+send_element_to_batcher(true, StringMapId, MergedElementsMap, MapOfMaps) ->
+    batcher:send_message(MergedElementsMap),
+    MapWithoutElement = maps:remove(StringMapId, MapOfMaps),
+    MapWithoutElement;
+
+send_element_to_batcher(false, StringMapId, MergedElementsMap, MapOfMaps) ->
+    NewMapElement = maps:put(StringMapId, MergedElementsMap, #{}),
+    MergedMapOfMaps = maps:merge(MapOfMaps, NewMapElement),
+    MergedMapOfMaps.

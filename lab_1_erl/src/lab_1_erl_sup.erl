@@ -34,6 +34,22 @@ init([]) ->
     Stream1 = "/tweets/1",
     Stream2 = "/tweets/2",
     
+    Database = #{
+        id => database,
+	    start => {database, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [database]},
+
+    Batcher = #{
+        id => batcher,
+	    start => {batcher, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [batcher]},
+
     Agregator = #{
         id => agregator,
 	    start => {agregator, start_link, []},
@@ -91,7 +107,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [Agregator, Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
+    ChildSpecs = [Database, Batcher, Agregator, Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
