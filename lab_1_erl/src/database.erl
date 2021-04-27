@@ -24,7 +24,10 @@ handle_cast({send_message, ListOfMaps}, State) ->
     add_to_database(ListOfTuples),
     Infomration = ets:info(tweet),
     Size = lists:keyfind(size, 1, Infomration),
-    io:format("~p~p ~n", ["Database =", Size]),
+    Infomration1 = ets:info(user),
+    Size1 = lists:keyfind(size, 1, Infomration1),
+    io:format("~p~p ~n", ["Database Tweets =", Size]),
+    io:format("~p~p ~n", ["Database Users =", Size1]),
     {noreply, State}.
 
 
