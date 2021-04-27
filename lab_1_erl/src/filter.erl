@@ -30,7 +30,7 @@ assign_id_to_map(EventData, IsJson, Id) when IsJson =:= true->
         #{<<"tweet">> := #{<<"text">> := TweetText}}
     } = DecodedJson,
     NewMap = #{<<"Twitter_ID">> => Id, <<"JSON">> => DecodedJson},
-    MapForAgregator = #{<<"Twitter_ID">> => Id, <<"Tweet">> => TweetText},
+    MapForAgregator = #{<<"Twitter_ID">> => Id, <<"Tweet">> => DecodedJson},
     NewId = Id + 1,
     worker_router:send_message(sentiment, NewMap),
     worker_router:send_message(engagement, NewMap),

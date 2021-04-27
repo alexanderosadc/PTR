@@ -15,14 +15,11 @@ send_message(Message) ->
 
 
 handle_cast({send_message, RecievedMessage}, ListOfMessages) ->
-    % io:format("~p~p ~n", ["EventData =", RecievedMessage]),
     AppendedListOfMessages = collect_messages(RecievedMessage, ListOfMessages),
     UpdatedListOfMessages = send_message_to_db(length(AppendedListOfMessages), AppendedListOfMessages),
-    % io:format("~p~p ~n", ["Batcher =", length(UpdatedListOfMessages)]),
     {noreply, UpdatedListOfMessages}.
 
 handle_info({_, _, secondsexpired}, ListOfMessages) ->
-    % io:format("~p~p ~n", ["ListOfMessages =", ListOfMessages]),
     send_message_from_timer(ListOfMessages),
     erlang:start_timer(10000, self(), secondsexpired),
     {noreply, []}.
