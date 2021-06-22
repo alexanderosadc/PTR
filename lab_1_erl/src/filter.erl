@@ -26,6 +26,7 @@ send_data_to_routers(EventData, IsJson, Id) ->
 
 assign_id_to_map(EventData, IsJson, Id) when IsJson =:= true->
     DecodedJson = jsx:decode(EventData),
+    io:format("~p ~n", [DecodedJson]),
     #{<<"message">> := 
         #{<<"tweet">> := #{<<"text">> := TweetText}}
     } = DecodedJson,
