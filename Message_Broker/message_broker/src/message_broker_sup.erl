@@ -40,8 +40,24 @@ init([]) ->
         shutdown => 2000, 
         type => worker,
 	    modules => [connection_parser]},
-        io:format("~p", ["Started Supervisor"]),
-    ChildSpecs = [ConnectionParser],
+
+    PublisherMemeory = #{
+        id => publisher_memory,
+	    start => {publisher_memory, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [publisher_memory]},
+    
+    TopicSupervisor = #{
+        id => topic_supervisor,
+	    start => {topic_supervisor, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => supervisor,
+	    modules => [topic_supervisor]},
+
+    ChildSpecs = [ConnectionParser, PublisherMemeory, TopicSupervisor],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

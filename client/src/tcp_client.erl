@@ -24,6 +24,9 @@ start_client() ->
     SomeHostInNet = "localhost", % to make it runnable on one machine
     {ok, Sock} = gen_tcp:connect(SomeHostInNet, 8091, 
                                 [binary, {packet, 0}]),
-                                
-    ok = gen_tcp:send(Sock, "{Cleaning data}"),
+    Command = "connect_publisher",
+    Topic = "event_score",
+    Message = "BlahBlahBlah",
+    JsonString = jsx:encode(#{<<"command">> => Command, <<"topic">> => Topic, <<"message">> => Message}),        
+    ok = gen_tcp:send(Sock, JsonString),
     ok = gen_tcp:close(Sock).

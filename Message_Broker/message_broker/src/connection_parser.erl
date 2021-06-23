@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 
--export([send_message/1, start_link/0, init/1, handle_cast/2, handle_info/2, start_server/1]).
+-export([send_message/1, start_link/0, init/1, handle_cast/2, start_server/1, parse_message/1]).
 
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
@@ -14,11 +14,8 @@ init([]) ->
 send_message(Message) ->
     gen_server:cast(?MODULE, {send_message, Message}).
 
-handle_cast({send_message, RecievedMessage}, ListOfMessages) ->
+handle_cast({send_message, RecievedMessage}, State) ->
     {noreply, noreply}.
-
-handle_info({_, _, secondsexpired}, ListOfMessages) ->
-    {noreply, []}.
 
 start_server(Port) ->
     Pid = spawn_link(fun() ->
@@ -42,8 +39,36 @@ handle(Socket) ->
         {tcp, Socket, <<"quit", _/binary>>} ->
         gen_tcp:close(Socket);
         {tcp, Socket, Msg} ->
-            io:format("~p", [Msg]),
+            
+            DecodedJson = parse_message(Msg),
+            #{
+                <<"command">> := Command
+            } = DecodedJson,
+            handle_command(Command, DecodedJson, Socket),
             gen_tcp:send(Socket, Msg),
         handle(Socket)
     end.
-{topic=, message=, command=,}
+
+parse_message(Msg) ->
+    DecodedJson = jsx:decode(Msg),
+    DecodedJson.
+
+handle_command("connect_publisher", DecodedJson, _) ->
+    publisher_memory:send_message(DecodedJson),
+    ok;
+handle_command("disconnect_publisher", _, Socket) ->
+    io:format("~p ~n", ["Publisher Disconnected"]),
+    gen_tcp:close(Socket);
+handle_command("msg_publisher", DecodedJson, _) ->
+    ok;
+
+handle_command("connect_client", DecodedJson, _) ->
+    ok;
+handle_command("disconnect_client", DecodedJson, _) ->
+    ok;
+handle_command("subscribe_client", DecodedJson, _) ->
+    ok;
+handle_command("unsubscribe_client", DecodedJson, _) ->
+    ok;
+handle_command("listoftopics_client", DecodedJson, _) ->
+    ok.
