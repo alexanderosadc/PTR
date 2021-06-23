@@ -8,7 +8,10 @@ start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
 init([]) ->
-    start_client(),
+    Sock = start_client(),
+    send_data(Sock, "connect_publisher", "event_score", "asfas"),
+    % send_data(Sock, "msg_publisher", "event_score", "BlahBlahBlah"),
+    % close_connection(Sock),
     {ok, []}.
 
 send_message(Message) ->
@@ -23,10 +26,13 @@ handle_info({_, _, secondsexpired}, ListOfMessages) ->
 start_client() ->
     SomeHostInNet = "localhost", % to make it runnable on one machine
     {ok, Sock} = gen_tcp:connect(SomeHostInNet, 8091, 
-                                [binary, {packet, 0}]),
-    Command = "connect_publisher",
-    Topic = "event_score",
-    Message = "BlahBlahBlah",
+                                [binary, {packet, 0}], 1000),
+    Sock.
+    
+
+send_data(Sock, Command, Topic, Message) ->
     JsonString = jsx:encode(#{<<"command">> => Command, <<"topic">> => Topic, <<"message">> => Message}),        
-    ok = gen_tcp:send(Sock, JsonString),
-    ok = gen_tcp:close(Sock).
+    gen_tcp:send(Sock, JsonString).
+
+close_connection(Sock) ->
+    gen_tcp:close(Sock).

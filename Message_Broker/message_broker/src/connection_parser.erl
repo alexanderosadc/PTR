@@ -36,14 +36,14 @@ acceptor(ListenSocket) ->
 handle(Socket) ->
     inet:setopts(Socket, [{active, once}]),
     receive
-        {tcp, Socket, <<"quit", _/binary>>} ->
-        gen_tcp:close(Socket);
         {tcp, Socket, Msg} ->
-            
+            io:format("~p ~n", ["ASFKJASFJASKFJASFJLKJLSAF"]),
             DecodedJson = parse_message(Msg),
+
             #{
                 <<"command">> := Command
             } = DecodedJson,
+
             handle_command(Command, DecodedJson, Socket),
             gen_tcp:send(Socket, Msg),
         handle(Socket)
@@ -60,6 +60,12 @@ handle_command("disconnect_publisher", _, Socket) ->
     io:format("~p ~n", ["Publisher Disconnected"]),
     gen_tcp:close(Socket);
 handle_command("msg_publisher", DecodedJson, _) ->
+    #{
+        <<"topic">> := Topic,
+        <<"message">> := Message
+    } = DecodedJson,
+    AtomTopic = list_to_atom(Topic),
+    AtomTopic:send_message(Message),
     ok;
 
 handle_command("connect_client", DecodedJson, _) ->
