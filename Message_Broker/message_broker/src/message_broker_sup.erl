@@ -33,13 +33,14 @@ init([]) ->
                  intensity => MaxRestart,
                  period => MaxTime},
     
-    ConnectionParser = #{
-        id => connection_parser,
-	    start => {connection_parser, start_link, []},
+
+    ConnectionSupervisor = #{
+        id => connection_supervisor,
+	    start => {connection_supervisor, start_link, []},
 	    restart => permanent, 
         shutdown => 2000, 
-        type => worker,
-	    modules => [connection_parser]},
+        type => supervisor,
+	    modules => [connection_supervisor]},
 
     PublisherMemeory = #{
         id => publisher_memory,
@@ -57,7 +58,7 @@ init([]) ->
         type => supervisor,
 	    modules => [topic_supervisor]},
 
-    ChildSpecs = [ConnectionParser, PublisherMemeory, TopicSupervisor],
+    ChildSpecs = [ConnectionSupervisor, PublisherMemeory, TopicSupervisor],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
