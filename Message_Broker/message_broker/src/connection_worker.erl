@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 % decode_data(Data, Socket),
--export([send_message/1, start_link/1, init/1, handle_cast/2, parse_message/1, handle_call/3, handle_info/2]).
+-export([send_message/1, start_link/1, init/1, handle_cast/2, handle_call/3, handle_info/2]).
 
 start_link(Socket) ->
     gen_server:start_link(?MODULE, Socket, []).
@@ -27,8 +27,10 @@ handle_cast({accept}, Socket) ->
 
 handle_info({_, _, Data}, Socket) ->
     % Answer = lab3_process:process(Data),
+    % NewData = <<Data>>,
+    io:format("Data: ~p~n", [jsx:is_json(Data)]),
     Answer = Data,
-    io:format("Accepted Socket: ~p~n", [Data]),
+    
     decode_data(Data, Socket),
 
     gen_tcp:send(Socket, Answer),
@@ -39,12 +41,10 @@ handle_info({_, _, Data}, Socket) ->
 handle_call({_, _}, Socket, _)->
     {noreply, Socket}.
 
-parse_message(Msg) ->
-    DecodedJson = jsx:decode(Msg),
-    DecodedJson.
 
 decode_data(Data, Socket) ->
-    DecodedJson = parse_message(Data),
+    NewData = list_to_binary(Data),
+    DecodedJson = jsx:decode(NewData),
 
             #{
                 <<"command">> := Command
