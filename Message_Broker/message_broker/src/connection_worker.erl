@@ -28,7 +28,6 @@ handle_cast({accept}, Socket) ->
 handle_info({_, _, Data}, Socket) ->
     % Answer = lab3_process:process(Data),
     % NewData = <<Data>>,
-    io:format("Data: ~p~n", [jsx:is_json(Data)]),
     Answer = Data,
     
     decode_data(Data, Socket),
@@ -49,11 +48,11 @@ decode_data(Data, Socket) ->
             #{
                 <<"command">> := Command
             } = DecodedJson,
-            io:format("~p ~n", [Command]),
+            % io:format("~p ~n", [Command]),
             handle_command(Command, DecodedJson, Socket).
 
 handle_command("connect_publisher", DecodedJson, _) ->
-    publisher_memory:send_message(DecodedJson),
+    publisher_memory:send_message({"verify_topics", DecodedJson}),
     ok;
 handle_command("disconnect_publisher", _, Socket) ->
     io:format("~p ~n", ["Publisher Disconnected"]),
@@ -64,7 +63,8 @@ handle_command("msg_publisher", DecodedJson, _) ->
         <<"message">> := Message
     } = DecodedJson,
     AtomTopic = list_to_atom(Topic),
-    AtomTopic:send_message(Message),
+    % io:format("~p ~n", [AtomTopic]),
+    topic_worker:send_message(Message, AtomTopic),
     ok;
 
 handle_command("connect_client", DecodedJson, _) ->
@@ -75,5 +75,9 @@ handle_command("subscribe_client", DecodedJson, _) ->
     ok;
 handle_command("unsubscribe_client", DecodedJson, _) ->
     ok;
-handle_command("listoftopics_client", DecodedJson, _) ->
+handle_command("listoftopics_client", DecodedJson, Socket) ->
+    Response = #{list_of_topics => subscriber_memory:send_message("list_of_topics")},
+    EncodedJson = jsx:encode(Response),
+    io:format("~p ~n", [Response]),
+    gen_tcp:send(Socket, EncodedJson),
     ok.

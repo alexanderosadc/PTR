@@ -50,6 +50,14 @@ init([]) ->
         type => worker,
 	    modules => [publisher_memory]},
     
+    SubscriberMemory = #{
+        id => subscriber_memory,
+	    start => {subscriber_memory, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [subscriber_memory]},
+    
     TopicSupervisor = #{
         id => topic_supervisor,
 	    start => {topic_supervisor, start_link, []},
@@ -57,8 +65,9 @@ init([]) ->
         shutdown => 2000, 
         type => supervisor,
 	    modules => [topic_supervisor]},
+    
 
-    ChildSpecs = [ConnectionSupervisor, PublisherMemeory, TopicSupervisor],
+    ChildSpecs = [SubscriberMemory, ConnectionSupervisor, PublisherMemeory, TopicSupervisor],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions

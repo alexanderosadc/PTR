@@ -10,27 +10,29 @@ start_link() ->
 init(ListOfTopics) ->
 
     {ok, ListOfTopics}.
-
-handle_call({_, _}, ListOfTopics, _)->
-    {noreply, ListOfTopics}.
  
-send_message(Message) ->
-    gen_server:cast(?MODULE, {send_message, Message}).
+send_message({"verify_topics", Message}) ->
+    gen_server:cast(?MODULE, {"send_message", Message});
 
-handle_cast({send_message, RecievedMessage}, ListOfTopics) ->
+send_message("list_of_topics") ->
+    gen_server:call(?MODULE, "list_of_topics").
+
+handle_cast({"send_message", RecievedMessage}, ListOfTopics) ->
     #{
         <<"topic">> := Topic,
         <<"command">> := Command
     } = RecievedMessage,
     
     AtomTopic = list_to_atom(Topic),
-    io:format("~p ~n", [ListOfTopics]),
-    io:format("~p ~n", [AtomTopic]),
+    % io:format("~p ~n", [ListOfTopics]),
+    % io:format("~p ~n", [AtomTopic]),
     IsTopicInList = lists:member(AtomTopic, ListOfTopics),
     ListOfTopicsToSend = add_new_topic(AtomTopic, ListOfTopics, Command, IsTopicInList),
-    io:format("~p ~n", [ListOfTopicsToSend]),
+    % io:format("~p ~n", [ListOfTopicsToSend]),
     {noreply, ListOfTopicsToSend}.
 
+handle_call("list_of_topics", From, ListOfTopics)->
+    {reply, ListOfTopics, ListOfTopics}.
 % Add new Topic
 add_new_topic(AtomTopic, ListOfTopics, "connect_publisher", false) ->
     topic_supervisor:add_new_child(AtomTopic),

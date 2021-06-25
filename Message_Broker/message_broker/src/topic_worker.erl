@@ -2,21 +2,22 @@
 
 -behaviour(gen_server).
 
--export([handle_call/3, send_message/1, start_link/1, init/1, handle_cast/2]).
+-export([handle_call/3, send_message/2, start_link/1, init/1, handle_cast/2]).
 
 start_link(NameOfChild) ->
-    {ok, Pid} = gen_server:start_link({local, NameOfChild}, ?MODULE, [], []),
+    MessageQueue = [],
+    {ok, Pid} = gen_server:start_link({local, NameOfChild}, ?MODULE, [MessageQueue], []),
     {ok, Pid}.
 
-init([]) ->
-    {ok, 1}.
+init([MessageQueue]) ->
+    {ok, MessageQueue}.
 
-handle_call({_, _}, ListOfTopics, _)->
-    {noreply, ListOfTopics}.
+handle_call({_, _}, MessageQueue, _)->
+    {noreply, MessageQueue}.
  
-send_message(Message) ->
-    io:format("~p ~n", ["blahblahblah"]),
-    gen_server:cast(?MODULE, {send_message, Message}).
+send_message(Message, AtomTopic) ->
+    gen_server:cast(AtomTopic, {send_message, Message}).
 
-handle_cast({send_message, RecievedMessage}, State) ->
-    {noreply, State}.
+handle_cast({send_message, RecievedMessage}, MessageQueue) ->
+    NewMessageQueue = [RecievedMessage | MessageQueue],
+    {noreply, NewMessageQueue}.

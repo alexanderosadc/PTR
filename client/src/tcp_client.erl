@@ -20,17 +20,17 @@ send_message(Command, Topic, Msg) ->
     EncodedJson = transform_to_json(Command, Topic, Msg),
     gen_server:cast(?MODULE, {send, EncodedJson}).
 
-handle_call(_, _, _State) ->
-    {noreply, _State}.
+handle_call(_, _, Socket) ->
+    {noreply, Socket}.
 
 handle_cast({send, Message}, Socket) ->
-    io:format("Encoded JSON: ~p~n", [Message]),
+    % io:format("Encoded JSON: ~p~n", [Message]),
     gen_tcp:send(Socket, Message),
     {noreply, Socket}.
 
-handle_info({_, _, Data}, _State) ->
+handle_info({_, _, Data}, Socket) ->
     io:format("Client Received: ~p~n", [Data]),
-    {noreply, _State}.
+    {noreply, Socket}.
 
 transform_to_json(Command, Topic, Message) ->
     jsx:encode(#{<<"command">> => Command, <<"topic">> => Topic, <<"message">> => Message}).   
