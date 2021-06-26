@@ -6,18 +6,40 @@
 
 start_link(NameOfChild) ->
     MessageQueue = [],
-    {ok, Pid} = gen_server:start_link({local, NameOfChild}, ?MODULE, [MessageQueue], []),
+    SubscribersSokcetList = [],
+    {ok, Pid} = gen_server:start_link({local, NameOfChild}, ?MODULE, [{MessageQueue, SubscribersSokcetList}], []),
     {ok, Pid}.
 
-init([MessageQueue]) ->
-    {ok, MessageQueue}.
+init([Data]) ->
+    {ok, Data}.
 
-handle_call({_, _}, MessageQueue, _)->
-    {noreply, MessageQueue}.
+handle_call({_, _}, {MessageQueue, SubscribersSokcetList}, _)->
+    {noreply, {MessageQueue, SubscribersSokcetList}}.
  
-send_message(Message, AtomTopic) ->
-    gen_server:cast(AtomTopic, {send_message, Message}).
+send_message(Command, {Message, AtomTopic}) ->
+    gen_server:cast(AtomTopic, {Command, Message}).
 
-handle_cast({send_message, RecievedMessage}, MessageQueue) ->
+handle_cast({"msg_publisher", RecievedMessage}, {MessageQueue, SubscribersSokcetList}) ->
+    io:format("~p ~n", [RecievedMessage]),
     NewMessageQueue = [RecievedMessage | MessageQueue],
-    {noreply, NewMessageQueue}.
+    send_messages_to_client(SubscribersSokcetList, RecievedMessage),
+    % connection_worker:send_message({"send_msg", SubscribersSokcetList, RecievedMessage}),
+    {noreply, {NewMessageQueue, SubscribersSokcetList}};
+
+handle_cast({"subscribe_client", Socket}, {MessageQueue, SubscribersSokcetList}) ->
+    io:format("~p ~n", ["Connected to topic"]),
+    NewSocketList = [Socket | SubscribersSokcetList],
+    {noreply, {MessageQueue, NewSocketList}};
+
+handle_cast({"unsubscribe_client", Socket}, {MessageQueue, SubscribersSokcetList}) ->
+    io:format("~p ~n", ["Unsubscribed from topic"]),
+    NewSocketList = lists:delete(Socket,SubscribersSokcetList),
+    {noreply, {MessageQueue, NewSocketList}}.
+
+send_messages_to_client(ListOfPids, RecievedMessage) when length(ListOfPids) > 0 ->
+    [UniquePID | NewList] = ListOfPids,
+    connection_worker:send_message({UniquePID, RecievedMessage}),
+    send_messages_to_client(NewList, RecievedMessage);
+
+send_messages_to_client(SubscribersSokcetList, RecievedMessage) ->
+    ok.

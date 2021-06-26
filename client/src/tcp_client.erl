@@ -12,7 +12,7 @@ init([]) ->
     {ok, Socket} = gen_tcp:connect(
         "localhost",
         8091, 
-    [{active, false}, {packet, 2}]
+        [{active, true}, {packet, 2}]
     ),
     {ok, Socket}.
 
