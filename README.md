@@ -21,5 +21,7 @@ The project is created in erlang with the help of:
 * jsx library - library for json parsing;
 
 [Video](https://utm-my.sharepoint.com/:v:/g/personal/alexandru_osadcenco_isa_utm_md/EXOut2cIIY1Ii5Ej2kVx1ugBwMtiG-4j6vDyzs9f4NDr4w?e=CIDGDK)
+
+## Architecture Diagram
 ![photo_2021-06-29_15-30-22](https://user-images.githubusercontent.com/19310230/123797624-0e156a80-d8ef-11eb-8d28-02264f14f0db.jpg)
 
