@@ -20,7 +20,7 @@ send_message(Command, {Message, AtomTopic}) ->
     gen_server:cast(AtomTopic, {Command, Message}).
 
 handle_cast({"msg_publisher", RecievedMessage}, {MessageQueue, SubscribersSokcetList}) ->
-    io:format("~p ~n", [RecievedMessage]),
+    io:format("Recieved Message ~p ~n", [RecievedMessage]),
     NewMessageQueue = [RecievedMessage | MessageQueue],
     send_messages_to_client(SubscribersSokcetList, RecievedMessage),
     % connection_worker:send_message({"send_msg", SubscribersSokcetList, RecievedMessage}),

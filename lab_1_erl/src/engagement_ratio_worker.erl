@@ -21,8 +21,8 @@ check_json(Json, IsJson) when IsJson ->
     JsonMap = jsx:decode(Json),
      #{<<"message">> := #{<<"tweet">> := Tweet}} = JsonMap,
     IsRetweetedStatus = maps:is_key(<<"retweeted_status">>, Tweet),
-    EngagementRatio = check_retweeted_status(IsRetweetedStatus, JsonMap),
-    io:format("~p ~n", [EngagementRatio]);
+    EngagementRatio = check_retweeted_status(IsRetweetedStatus, JsonMap);
+    % io:format("~p ~n", [EngagementRatio]);
 
 check_json(TweetText, _) ->
     % io:format("~p ~n", ["Panic"]),

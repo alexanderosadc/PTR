@@ -26,7 +26,7 @@ send_data_to_routers(EventData, IsJson, Id) ->
 
 assign_id_to_map(EventData, IsJson, Id) when IsJson =:= true->
     DecodedJson = jsx:decode(EventData),
-    io:format("~p ~n", [DecodedJson]),
+    % io:format("~p ~n", [DecodedJson]),
     #{<<"message">> := 
         #{<<"tweet">> := #{<<"text">> := TweetText}}
     } = DecodedJson,
@@ -36,6 +36,7 @@ assign_id_to_map(EventData, IsJson, Id) when IsJson =:= true->
     worker_router:send_message(sentiment, NewMap),
     worker_router:send_message(engagement, NewMap),
     agregator:send_message(MapForAgregator),
+    % io:format("~p ~n", [MapForAgregator]),
     NewId;
 
 assign_id_to_map(EventData, IsJson, Id) when IsJson =:= false ->

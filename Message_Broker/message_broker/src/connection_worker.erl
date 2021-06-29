@@ -18,7 +18,8 @@ init(Socket) ->
 
 send_message({UniquePID, RecievedMessage}) ->
     io:format("Send Message Connection Worker: ~p~n", [RecievedMessage]),
-    gen_server:cast(UniquePID, RecievedMessage).
+
+    gen_server:cast(UniquePID, jsx:encode(RecievedMessage)).
 
 handle_cast({accept}, Socket) ->
     {ok, NewSocket} = gen_tcp:accept(Socket),
@@ -27,7 +28,7 @@ handle_cast({accept}, Socket) ->
     {noreply, NewSocket};
 
 handle_cast(RecievedMessage, Socket) ->
-    io:format("~p~n", ["Handle CAST"]),
+    % io:format("~p~n", ["Handle CAST"]),
     gen_tcp:send(Socket, RecievedMessage),
     % send_messages_to_client(SubscribersSokcetList, RecievedMessage),
     {noreply, Socket}.

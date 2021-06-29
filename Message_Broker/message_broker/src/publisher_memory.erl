@@ -28,7 +28,7 @@ handle_cast({"send_message", RecievedMessage}, ListOfTopics) ->
     % io:format("~p ~n", [AtomTopic]),
     IsTopicInList = lists:member(AtomTopic, ListOfTopics),
     ListOfTopicsToSend = add_new_topic(AtomTopic, ListOfTopics, Command, IsTopicInList),
-    % io:format("~p ~n", [ListOfTopicsToSend]),
+    io:format("~p ~n", [ListOfTopicsToSend]),
     {noreply, ListOfTopicsToSend}.
 
 handle_call("list_of_topics", From, ListOfTopics)->

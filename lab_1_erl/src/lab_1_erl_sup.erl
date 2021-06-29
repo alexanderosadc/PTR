@@ -4,11 +4,8 @@
 %%%-------------------------------------------------------------------
 
 -module(lab_1_erl_sup).
-
 -behaviour(supervisor).
-
 -export([init/1, start_link/0]).
-
 -define(SERVER, ?MODULE).
 
 start_link() ->
@@ -81,6 +78,15 @@ init([]) ->
         shutdown => 2000, 
         type => worker,
 	    modules => [reader]},
+
+    TCPCLIENT = #{
+        id => tcp_client,
+	    start => {tcp_client, start_link, []},
+	    restart => permanent, 
+        shutdown => 2000, 
+        type => worker,
+	    modules => [tcp_client]},
+    
     
 
     PoolSupervisorEngagement = #{
@@ -107,7 +113,7 @@ init([]) ->
 	%     modules => [sentinel_worker]},
 
 
-    ChildSpecs = [Database, Batcher, Agregator, Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2],
+    ChildSpecs = [Database, Batcher, Agregator, Filter, PoolSupervisorSentiment, PoolSupervisorEngagement, Reader1, Reader2, TCPCLIENT],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
